@@ -1,0 +1,138 @@
+import tkinter as tk
+from tkinter import messagebox, simpledialog
+import sqlite3
+ 
+conn = sqlite3.connect('petshop.db')
+cursor = conn.cursor()
+ 
+cursor.execute('''
+    CREATE TABLE IF NOT EXISTS clientes (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        nome TEXT NOT NULL,
+        telefone TEXT NOT NULL,
+        email TEXT NOT NULL,
+        nome_pet TEXT NOT NULL,
+        tipo_pet TEXT NOT NULL,
+        raca_pet TEXT NOT NULL
+    )
+''')
+ 
+conn.commit()
+ 
+def cadastrar_cliente(nome, telefone, email, nome_pet, tipo_pet, raca_pet):
+    cursor.execute('''
+        INSERT INTO clientes (nome, telefone, email, nome_pet, tipo_pet, raca_pet)
+        VALUES (?, ?, ?, ?, ?, ?)
+    ''', (nome, telefone, email, nome_pet, tipo_pet, raca_pet))
+    conn.commit()
+ 
+def listar_clientes():
+    cursor.execute('SELECT * FROM clientes')
+    return cursor.fetchall()
+ 
+def editar_cliente(id, nome, telefone, email, nome_pet, tipo_pet, raca_pet):
+    cursor.execute('''
+        UPDATE clientes SET nome=?, telefone=?, email=?, nome_pet=?, tipo_pet=?, raca_pet=? WHERE id=?
+    ''', (nome, telefone, email, nome_pet, tipo_pet, raca_pet, id))
+    conn.commit()
+ 
+def remover_cliente(id):
+    cursor.execute('DELETE FROM clientes WHERE id=?', (id,))
+    conn.commit()
+ 
+def abrir_login():
+    login = tk.Tk()
+    login.title("Login")
+ 
+    tk.Label(login, text="Usuário:").pack()
+    entrada_usuario = tk.Entry(login)
+    entrada_usuario.pack()
+ 
+    def autenticar():
+        usuario = entrada_usuario.get()
+        if usuario:
+            login.destroy()
+            abrir_janela_principal()
+        else:
+            messagebox.showerror("Erro", "Usuário não informado!")
+ 
+    tk.Button(login, text="Entrar", command=autenticar).pack()
+ 
+    login.mainloop()
+ 
+
+def abrir_janela_principal():
+    root = tk.Tk()
+    root.title("Gerenciamento de Clientes - Pet Shop")
+ 
+    # Função de Cadastro
+    def cadastrar():
+        nome = simpledialog.askstring("Cadastro", "Nome do cliente:")
+        telefone = simpledialog.askstring("Cadastro", "Telefone:")
+        email = simpledialog.askstring("Cadastro", "Email:")
+        nome_pet = simpledialog.askstring("Cadastro", "Nome do Pet:")
+        tipo_pet = simpledialog.askstring("Cadastro", "Tipo do Pet (Ex: Cachorro, Gato, Pássaro):")
+        raca_pet = simpledialog.askstring("Cadastro", "Raça do Pet:")
+ 
+        if nome and telefone and email and nome_pet and tipo_pet and raca_pet:
+            cadastrar_cliente(nome, telefone, email, nome_pet, tipo_pet, raca_pet)
+            messagebox.showinfo("Sucesso", "Cliente cadastrado!")
+        else:
+            messagebox.showwarning("Aviso", "Todos os campos são obrigatórios.")
+ 
+    # Função de Listar para Edição e Remoção
+    def listar_para_edicao():
+        lista = listar_clientes()
+        edicao_janela = tk.Toplevel(root)
+        edicao_janela.title("Editar ou Remover Cliente")
+ 
+        for cliente in lista:
+            id, nome, telefone, email, nome_pet, tipo_pet, raca_pet = cliente
+            info = f"{id} - {nome}, {telefone}, {email}, Pet: {nome_pet}, Tipo: {tipo_pet}, Raça: {raca_pet}"
+            lbl = tk.Label(edicao_janela, text=info)
+            lbl.pack()
+ 
+            def editar_cliente_local(cliente_id=id):
+                novo_nome = simpledialog.askstring("Editar", "Novo Nome:")
+                novo_telefone = simpledialog.askstring("Editar", "Novo Telefone:")
+                novo_email = simpledialog.askstring("Editar", "Novo Email:")
+                novo_nome_pet = simpledialog.askstring("Editar", "Novo Nome do Pet:")
+                novo_tipo_pet = simpledialog.askstring("Editar", "Novo Tipo do Pet:")
+                nova_raca_pet = simpledialog.askstring("Editar", "Nova Raça do Pet:")
+ 
+                if novo_nome and novo_telefone and novo_email and novo_nome_pet and novo_tipo_pet and nova_raca_pet:
+                    editar_cliente(cliente_id, novo_nome, novo_telefone, novo_email, novo_nome_pet, novo_tipo_pet, nova_raca_pet)
+                    messagebox.showinfo("Sucesso", "Cliente atualizado!")
+                    edicao_janela.destroy()
+                else:
+                    messagebox.showwarning("Aviso", "Todos os campos são obrigatórios.")
+ 
+            def remover_cliente_local(cliente_id=id):
+                if messagebox.askyesno("Confirmar", "Tem certeza que deseja remover este cliente?"):
+                    remover_cliente(cliente_id)
+                    messagebox.showinfo("Sucesso", "Cliente removido!")
+                    edicao_janela.destroy()
+ 
+            tk.Button(edicao_janela, text="Editar", command=editar_cliente_local).pack()
+            tk.Button(edicao_janela, text="Remover", command=remover_cliente_local).pack()
+ 
+    # Função de Relatório
+    def gerar_relatorio():
+        relatorio_janela = tk.Toplevel(root)
+        relatorio_janela.title("Relatório de Clientes")
+ 
+        lista = listar_clientes()
+        for cliente in lista:
+            id, nome, telefone, email, nome_pet, tipo_pet, raca_pet = cliente
+            info = f"ID: {id}, Nome: {nome}, Telefone: {telefone}, Email: {email}, Pet: {nome_pet}, Tipo: {tipo_pet}, Raça: {raca_pet}"
+            tk.Label(relatorio_janela, text=info).pack()
+ 
+    # Botões principais
+    tk.Button(root, text="Cadastrar Cliente", command=cadastrar, width=25).pack(pady=10)
+    tk.Button(root, text="Editar/Remover Cliente", command=listar_para_edicao, width=25).pack(pady=10)
+    tk.Button(root, text="Gerar Relatório", command=gerar_relatorio, width=25).pack(pady=10)
+ 
+    root.mainloop()
+ 
+
+abrir_login()
