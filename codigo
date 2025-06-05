@@ -65,7 +65,7 @@ def abrir_janela_principal():
     root = tk.Tk()
     root.title("Gerenciamento de Clientes - Pet Shop")
  
-    # Função de Cadastro
+    
     def cadastrar():
         nome = simpledialog.askstring("Cadastro", "Nome do cliente:")
         telefone = simpledialog.askstring("Cadastro", "Telefone:")
@@ -80,7 +80,7 @@ def abrir_janela_principal():
         else:
             messagebox.showwarning("Aviso", "Todos os campos são obrigatórios.")
  
-    # Função de Listar para Edição e Remoção
+    
     def listar_para_edicao():
         lista = listar_clientes()
         edicao_janela = tk.Toplevel(root)
@@ -116,7 +116,7 @@ def abrir_janela_principal():
             tk.Button(edicao_janela, text="Editar", command=editar_cliente_local).pack()
             tk.Button(edicao_janela, text="Remover", command=remover_cliente_local).pack()
  
-    # Função de Relatório
+    
     def gerar_relatorio():
         relatorio_janela = tk.Toplevel(root)
         relatorio_janela.title("Relatório de Clientes")
@@ -127,7 +127,7 @@ def abrir_janela_principal():
             info = f"ID: {id}, Nome: {nome}, Telefone: {telefone}, Email: {email}, Pet: {nome_pet}, Tipo: {tipo_pet}, Raça: {raca_pet}"
             tk.Label(relatorio_janela, text=info).pack()
  
-    # Botões principais
+    
     tk.Button(root, text="Cadastrar Cliente", command=cadastrar, width=25).pack(pady=10)
     tk.Button(root, text="Editar/Remover Cliente", command=listar_para_edicao, width=25).pack(pady=10)
     tk.Button(root, text="Gerar Relatório", command=gerar_relatorio, width=25).pack(pady=10)
